@@ -15,9 +15,9 @@ namespace Simulator
             {
                 client.Post(new Probe
                 {
-                    PatientId = 0,
+                    PatientId = 1,
                     HeartRate = 0,
-                    OxygenSaturation = 43,
+                    OxygenSaturations = 43,
                     RespirationRate = 23,
                     SystolicBp = 99,
                     Temperature = (float)random.NextDouble() * 50
