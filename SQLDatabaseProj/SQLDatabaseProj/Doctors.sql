@@ -1,0 +1,8 @@
+﻿CREATE TABLE [dbo].[Doctors]
+(
+	[Id] INT NOT NULL PRIMARY KEY IDENTITY(1,1),
+	[FirstName] VARCHAR(32) NOT NULL,
+	[Surname] VARCHAR(32) NOT NULL,
+	[Email] VARCHAR(64) NOT NULL,
+	[Phone] VARCHAR(14) NOT NULL
+)

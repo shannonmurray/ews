@@ -11,9 +11,24 @@ namespace HttpServices
     {
         private readonly DbConn _connection;
 
+        private static int? _probeId;
+
         public ProbeService(DbConn connection)
         {
             _connection = connection;
+            if (_probeId == null)
+            {
+                using (var transaction = _connection.Conn.BeginTransaction(IsolationLevel.RepeatableRead))
+                {
+                    using (
+                        var command = new SqlCommand(
+                            "SELECT Id FROM Doctors WHERE FirstName='Auto' AND Surname='Probe'",
+                            transaction.Connection, transaction))
+                    {
+                        _probeId = (int) command.ExecuteScalar();
+                    }
+                }
+            }
         }
 
         public void Post(Probe request)
@@ -21,7 +36,7 @@ namespace HttpServices
             using (var transaction = _connection.Conn.BeginTransaction(IsolationLevel.RepeatableRead))
             {
                 using (
-                    var command = new SqlCommand("SELECT COUNT(*) FROM patients WHERE patient_id=@patientId;",
+                    var command = new SqlCommand("SELECT COUNT(*) FROM Patients WHERE Id=@patientId;",
                         transaction.Connection, transaction))
                 {
                     command.Parameters.AddWithValue("@patientId", request.PatientId);
@@ -32,13 +47,14 @@ namespace HttpServices
 
                 using (
                     var command = new SqlCommand(
-                        "INSERT INTO patient_updates " +
-                        "   (patient_id, logged_at, respiration_rate, oxygen_saturation, temperature, systolic_bp, heart_rate) " +
+                        "INSERT INTO PatientUpdates " +
+                        "   (Patient, Reporter, RespirationRate, OxygenSaturations, Temperature, SystolicBloodPresure, HeartRate) " +
                         "VALUES " +
-                        "(@patId, GETDATE(), @rr, @os, @tmp, @sbp, @hr);",
+                        "(@patId, @probe, @rr, @os, @tmp, @sbp, @hr);",
                         transaction.Connection, transaction))
                 {
                     command.Parameters.AddWithValue("@patId", request.PatientId);
+                    command.Parameters.AddWithValue("@probe", _probeId);
                     command.Parameters.AddWithValue("@rr", request.RespirationRate);
                     command.Parameters.AddWithValue("@os", request.OxygenSaturation);
                     command.Parameters.AddWithValue("@tmp", request.Temperature);
